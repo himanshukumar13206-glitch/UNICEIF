@@ -6,7 +6,7 @@ from pyrogram import Client
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Update
-from pytgcalls.types.input_stream import AudioPiped       # works with 2.0.0
+from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
 from utils.database import db
 from utils.helpers import log_message
