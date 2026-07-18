@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Update
-from pytgcalls.types import StreamEnded          # ✅ Fixed import
+from pytgcalls.types.stream import StreamAudioEnded   # ← original, works with 2.0.0
 from config import BOT_TOKEN, API_ID, API_HASH, SUPPORT_GROUP, SUPPORT_CHANNEL, ENABLE_VPLAY
 from services.extractor import extractor
 from services.player import Track, ChatPlayer, player_manager
@@ -13,27 +13,17 @@ from utils.database import db
 
 logging.basicConfig(level=logging.INFO)
 
-# Pyrogram client
-bot = Client(
-    "UNICEIF",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN,
-)
-
-# PyTgCalls
+bot = Client("UNICEIF", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 pytgcalls = PyTgCalls(bot)
 
-# PyTgCalls handler: auto‑skip when stream ends
 @pytgcalls.on_stream_end()
 async def stream_end(_, update: Update):
-    if isinstance(update, StreamEnded):          # ✅ Fixed class
+    if isinstance(update, StreamAudioEnded):
         chat_id = update.chat_id
         player = player_manager.players.get(chat_id)
         if player and player.is_playing:
             player._skip_event.set()
 
-# Commands
 @bot.on_message(filters.command("start"))
 async def start(_, msg: Message):
     text = "🎶 **UNICEIF Premium Music Bot** is alive!\n\n"
@@ -50,18 +40,16 @@ async def play(_, msg: Message):
         return await msg.reply_text("⛔ Unauthorized.")
     if len(msg.command) < 2:
         return await msg.reply_text("Usage: /play <query or YouTube URL>")
-
     query = msg.text.split(maxsplit=1)[1]
     status = await msg.reply_text("🔍 Searching...")
     info = await extractor.fetch(query)
     if not info:
         return await status.edit("❌ Could not fetch audio. Try another query.")
-
     track = Track(info, msg.from_user.id)
     player = player_manager.get(msg.chat.id, bot, pytgcalls)
     success = await player.add_track(track, status)
     if success is False:
-        return  # duration limit message already edited by add_track
+        return
     await status.edit(f"✅ Added to queue: **{track.title}**")
 
 @bot.on_message(filters.command("skip"))
@@ -133,7 +121,6 @@ async def main():
     await bot.start()
     await pytgcalls.start()
     logging.info("UNICEIF Premium Music Bot started")
-    # Keep running
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
