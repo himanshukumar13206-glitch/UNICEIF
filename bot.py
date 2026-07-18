@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Update
-from pytgcalls.types.stream import StreamAudioEnded
+from pytgcalls.types import StreamEnded          # ✅ Fixed import
 from config import BOT_TOKEN, API_ID, API_HASH, SUPPORT_GROUP, SUPPORT_CHANNEL, ENABLE_VPLAY
 from services.extractor import extractor
 from services.player import Track, ChatPlayer, player_manager
@@ -27,7 +27,7 @@ pytgcalls = PyTgCalls(bot)
 # PyTgCalls handler: auto‑skip when stream ends
 @pytgcalls.on_stream_end()
 async def stream_end(_, update: Update):
-    if isinstance(update, StreamAudioEnded):
+    if isinstance(update, StreamEnded):          # ✅ Fixed class
         chat_id = update.chat_id
         player = player_manager.players.get(chat_id)
         if player and player.is_playing:
@@ -130,8 +130,6 @@ async def np_cmd(_, msg: Message):
 
 async def main():
     await db.connect()
-    # Restore queues from DB?
-    # (Skipped for simplicity – all queues are in‑memory; on restart they’re lost unless MongoDB is used)
     await bot.start()
     await pytgcalls.start()
     logging.info("UNICEIF Premium Music Bot started")
