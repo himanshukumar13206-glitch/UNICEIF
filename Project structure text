@@ -1,13 +1,15 @@
-UNICEIF/
-├── bot.py                  # Bot entry point
-├── config.py               # Environment variables
+UNICEIF-premium-bot/
+├── .env.example
+├── config.py
+├── requirements.txt
+├── bot.py
+├── api_server.py
 ├── services/
 │   ├── __init__.py
-│   ├── player.py           # Voice chat player & queue
-│   └── youtube.py          # Audio URL extraction + fallback
+│   ├── extractor.py
+│   └── player.py
 ├── utils/
 │   ├── __init__.py
-│   └── helpers.py          # Small helpers
-├── requirements.txt
-├── .env.example
-└── render.yaml             # (optional) Render Blueprint
+│   ├── helpers.py
+│   └── database.py
+└── render.yaml
