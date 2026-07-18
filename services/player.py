@@ -6,8 +6,23 @@ from pyrogram import Client
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Update
-from pytgcalls.types.stream import AudioPiped          # ✅ Correct import for new py-tgcalls
 from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
+
+# --- Auto‑detect AudioPiped location (compatible with all py‑tgcalls 2.x versions) ---
+try:
+    from pytgcalls.types.input_stream import AudioPiped   # older versions (≤2.0)
+except ImportError:
+    try:
+        from pytgcalls.types import AudioPiped            # some 2.1‑2.2
+    except ImportError:
+        try:
+            from pytgcalls.types.stream import AudioPiped # newer 2.2+
+        except ImportError:
+            raise ImportError(
+                "❌ Cannot find AudioPiped. Check your py‑tgcalls version.\n"
+                "Try: pip install py-tgcalls==2.2.5"
+            )
+
 from utils.database import db
 from utils.helpers import log_message
 from config import SONG_DURATION_LIMIT
@@ -77,7 +92,7 @@ class ChatPlayer:
             try:
                 await self.pytgcalls.join_group_call(
                     self.chat_id,
-                    AudioPiped(self.current.url),
+                    AudioPiped(self.current.url),   # will use the correct AudioPiped class
                 )
                 await log_message(self.client, f"▶️ Now playing: **{self.current.title}** in {self.chat_id}")
             except (NoActiveGroupCall, GroupCallNotFound):
