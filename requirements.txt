@@ -1,5 +1,6 @@
 pyrogram==2.0.106
 py-tgcalls==2.0.0
+ntgcalls>=1.2.0b12,<3.0.0
 yt-dlp==2024.08.06
 httpx==0.27.0
 python-dotenv==1.0.1
