@@ -5,9 +5,8 @@ from typing import Optional, List
 from pyrogram import Client
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
-from pytgcalls.types import Update
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls.types.stream import StreamAudioEnded
+from pytgcalls.types import Update, AudioPiped          # ✅ Fixed import
+from pytgcalls.types import StreamEnded                # (Just in case, already used in bot.py)
 from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
 from utils.database import db
 from utils.helpers import log_message
@@ -62,7 +61,6 @@ class ChatPlayer:
                 await status_msg.edit(f"❌ Song too long. Max {SONG_DURATION_LIMIT} sec.")
             return False
         self.queue.append(track)
-        # Save to DB
         await db.save_queue(self.chat_id, [t.to_dict() for t in self.queue])
         if not self.is_playing:
             await self._start_playing()
@@ -74,13 +72,12 @@ class ChatPlayer:
         self.is_playing = True
         while self.queue:
             self.current = self.queue.popleft()
-            # Update DB
             await db.save_queue(self.chat_id, [t.to_dict() for t in self.queue])
             self.is_paused = False
             try:
                 await self.pytgcalls.join_group_call(
                     self.chat_id,
-                    AudioPiped(self.current.url),
+                    AudioPiped(self.current.url),      # ✅ Works with new import
                 )
                 await log_message(self.client, f"▶️ Now playing: **{self.current.title}** in {self.chat_id}")
             except (NoActiveGroupCall, GroupCallNotFound):
@@ -96,17 +93,14 @@ class ChatPlayer:
 
             self._skip_event.clear()
             try:
-                # Wait for track end or skip – timeout = duration + 10 sec buffer
                 await asyncio.wait_for(self._skip_event.wait(), timeout=self.current.duration + 10)
             except asyncio.TimeoutError:
-                pass  # track finished naturally
-            # Leave call to load next track (PyTgCalls auto‑stops when stream ends)
+                pass
             try:
                 await self.pytgcalls.leave_group_call(self.chat_id)
             except:
                 pass
 
-        # Queue empty
         self.current = None
         self.is_playing = False
         await db.save_queue(self.chat_id, [])
