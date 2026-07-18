@@ -5,8 +5,8 @@ from typing import Optional, List
 from pyrogram import Client
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
-from pytgcalls.types import Update, AudioPiped          # ✅ Fixed import
-from pytgcalls.types import StreamEnded                # (Just in case, already used in bot.py)
+from pytgcalls.types import Update
+from pytgcalls.types.stream import AudioPiped          # ✅ Correct import for new py-tgcalls
 from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
 from utils.database import db
 from utils.helpers import log_message
@@ -77,7 +77,7 @@ class ChatPlayer:
             try:
                 await self.pytgcalls.join_group_call(
                     self.chat_id,
-                    AudioPiped(self.current.url),      # ✅ Works with new import
+                    AudioPiped(self.current.url),
                 )
                 await log_message(self.client, f"▶️ Now playing: **{self.current.title}** in {self.chat_id}")
             except (NoActiveGroupCall, GroupCallNotFound):
