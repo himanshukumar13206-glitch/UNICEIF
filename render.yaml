@@ -1,0 +1,41 @@
+services:
+  - type: worker
+    name: uniceif-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: API_ID
+        sync: false
+      - key: API_HASH
+        sync: false
+      - key: OWNER_ID
+        sync: false
+      - key: API_URL
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: MONGO_URI
+        sync: false
+      - key: LOGGER_ID
+        sync: false
+      - key: SUPPORT_GROUP
+        sync: false
+      - key: SUPPORT_CHANNEL
+        sync: false
+      - key: DEVS
+        sync: false
+      - key: SONG_DURATION_LIMIT
+        sync: false
+
+  - type: web
+    name: uniceif-api
+    env: python
+    buildCommand: pip install fastapi uvicorn yt-dlp python-dotenv
+    startCommand: python api_server.py
+    envVars:
+      - key: API_KEY
+        sync: false
+    plan: free
