@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Update
-from pytgcalls.types.stream import StreamAudioEnded   # ← original, works with 2.0.0
+from pytgcalls.types.stream import StreamAudioEnded
 from config import BOT_TOKEN, API_ID, API_HASH, SUPPORT_GROUP, SUPPORT_CHANNEL, ENABLE_VPLAY
 from services.extractor import extractor
 from services.player import Track, ChatPlayer, player_manager
