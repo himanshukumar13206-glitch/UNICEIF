@@ -6,22 +6,25 @@ from pyrogram import Client
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Update
-from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
+from pytgcalls.exceptions import NoActiveGroupCall
 
-# --- Auto‑detect AudioPiped location (compatible with all py‑tgcalls 2.x versions) ---
+# Optional: GroupCallNotFound might be missing in newer versions
 try:
-    from pytgcalls.types.input_stream import AudioPiped   # older versions (≤2.0)
+    from pytgcalls.exceptions import GroupCallNotFound
+except ImportError:
+    GroupCallNotFound = None
+
+# Auto‑detect AudioPiped
+try:
+    from pytgcalls.types.input_stream import AudioPiped
 except ImportError:
     try:
-        from pytgcalls.types import AudioPiped            # some 2.1‑2.2
+        from pytgcalls.types import AudioPiped
     except ImportError:
         try:
-            from pytgcalls.types.stream import AudioPiped # newer 2.2+
+            from pytgcalls.types.stream import AudioPiped
         except ImportError:
-            raise ImportError(
-                "❌ Cannot find AudioPiped. Check your py‑tgcalls version.\n"
-                "Try: pip install py-tgcalls==2.2.5"
-            )
+            raise ImportError("❌ Cannot find AudioPiped. Reinstall py‑tgcalls.")
 
 from utils.database import db
 from utils.helpers import log_message
@@ -92,16 +95,17 @@ class ChatPlayer:
             try:
                 await self.pytgcalls.join_group_call(
                     self.chat_id,
-                    AudioPiped(self.current.url),   # will use the correct AudioPiped class
+                    AudioPiped(self.current.url),
                 )
                 await log_message(self.client, f"▶️ Now playing: **{self.current.title}** in {self.chat_id}")
-            except (NoActiveGroupCall, GroupCallNotFound):
+            except NoActiveGroupCall:
                 await self.client.send_message(self.chat_id, "❌ No active voice chat. Start one first.")
                 self.is_playing = False
                 self.queue.clear()
                 await db.save_queue(self.chat_id, [])
                 return
             except Exception as e:
+                # GroupCallNotFound or any other error
                 logger.error(f"Stream error: {e}")
                 await self.client.send_message(self.chat_id, f"❌ Stream error: {e}")
                 continue
